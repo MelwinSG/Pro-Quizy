@@ -1,0 +1,243 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro Quizy â€” Smart Self-Evaluating Quiz App</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+</head>
+<body>
+
+<div class="hamburger" id="hamburger" onclick="toggleSidebar()">
+  <div class="ham-line"></div><div class="ham-line"></div><div class="ham-line"></div>
+</div>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<div id="app">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">Pro<span>Quizy</span></div>
+      <div class="logo-sub">Your Personal Learning Guide</div>
+    </div>
+    <div class="nav-section">Menu</div>
+    <div class="nav-item active" onclick="showPage('home',this)"><span class="nav-icon">ðŸ </span>Home</div>
+    <div class="nav-item" onclick="showPage('quiz-setup',this)"><span class="nav-icon">ðŸŽ¯</span>Start Quiz</div>
+    <div class="nav-section">Analytics</div>
+    <div class="nav-item" onclick="showPage('dashboard',this)"><span class="nav-icon">ðŸ“Š</span>Dashboard</div>
+    <div class="nav-item" onclick="showPage('history',this)"><span class="nav-icon">ðŸ“–</span>History</div>
+    <div class="nav-item" onclick="showPage('weaknesses',this)"><span class="nav-icon">âš ï¸</span>Weak Areas</div>
+    <div class="nav-section">More</div>
+    <div class="nav-item" onclick="showPage('tips',this)"><span class="nav-icon">ðŸ’¡</span>Study Tips</div>
+    <div class="sidebar-footer">
+      <div class="theme-toggle">
+        <span style="font-size:13px;">Light Mode</span>
+        <div class="toggle-btn" id="themeToggle" onclick="toggleTheme()">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main">
+    <!-- HOME -->
+    <div class="page active" id="page-home">
+      <div class="hero fade-up">
+        <div class="hero-title">ðŸ‘‹ Welcome to Pro Quizy</div>
+        <div class="hero-sub">Your intelligent study companion. Take quizzes, identify your weak spots, and grow stronger every day.</div>
+        <div class="hero-actions">
+          <button class="btn btn-white" onclick="showPage('quiz-setup', document.querySelector('[onclick*=quiz-setup]'))">ðŸŽ¯ Start a Quiz</button>
+          <button class="btn btn-outline-white" onclick="showPage('dashboard', document.querySelector('[onclick*=dashboard]'))">ðŸ“Š View Progress</button>
+        </div>
+      </div>
+      <div id="home-stats-row" class="grid4 fade-up" style="margin-bottom:24px;"></div>
+      <div class="card fade-up" style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h3 style="font-size:16px;font-weight:700;">ðŸ“š Choose a Subject</h3>
+          <span style="font-size:12px;color:var(--text3);">Click to start a quick quiz</span>
+        </div>
+        <div class="subject-grid" id="subjectGrid"></div>
+      </div>
+      <div class="grid2 fade-up">
+        <div class="card">
+          <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">âš ï¸ Areas to Improve</h3>
+          <div id="home-weaknesses"></div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">ðŸ’ª Your Strengths</h3>
+          <div id="home-strengths"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZ SETUP -->
+    <div class="page" id="page-quiz-setup">
+      <div class="page-header">
+        <div class="page-title">ðŸŽ¯ Setup Your Quiz</div>
+        <div class="page-sub">Customize your quiz experience</div>
+      </div>
+      <div class="card fade-up" style="max-width:620px;">
+        <div class="setup-row">
+          <div><div class="setup-label">Subject</div><div class="setup-hint">Choose what you want to practice</div></div>
+          <select id="setupSubject" style="min-width:160px;"></select>
+        </div>
+        <div class="setup-row">
+          <div><div class="setup-label">Difficulty</div><div class="setup-hint">Select challenge level</div></div>
+          <div class="diff-btns">
+            <button class="diff-btn active-easy" data-diff="easy" onclick="selectDiff(this,'easy')">Easy</button>
+            <button class="diff-btn" data-diff="medium" onclick="selectDiff(this,'medium')">Medium</button>
+            <button class="diff-btn" data-diff="hard" onclick="selectDiff(this,'hard')">Hard</button>
+          </div>
+        </div>
+        <div class="setup-row">
+          <div><div class="setup-label">Number of Questions</div><div class="setup-hint">5â€“20 questions per quiz</div></div>
+          <input type="number" id="setupQCount" min="5" max="20" value="10" style="width:80px;">
+        </div>
+        <div class="setup-row">
+          <div><div class="setup-label">Timer</div><div class="setup-hint">Seconds per question (0 = no timer)</div></div>
+          <input type="number" id="setupTimer" min="0" max="120" value="30" style="width:80px;">
+        </div>
+        <div class="setup-row">
+          <div><div class="setup-label">Show Explanations</div><div class="setup-hint">See why answers are right/wrong</div></div>
+          <div class="toggle-btn on" id="explToggle" onclick="this.classList.toggle('on')">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:12px;">
+          <button class="btn btn-primary" style="flex:1;" onclick="startQuiz()">ðŸš€ Start Quiz</button>
+          <button class="btn btn-ghost" onclick="showPage('home',document.querySelector('[onclick*=home]'))">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div class="page" id="page-quiz">
+      <div class="quiz-header">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);" id="quizSubjectLabel"></div>
+          <div class="quiz-progress-info" id="quizProgressInfo"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="quiz-timer" id="quizTimer"><span class="timer-icon">â±</span><span id="timerDisplay">--</span></div>
+          <button class="btn btn-ghost" style="padding:8px 14px;font-size:12px;" onclick="if(confirm('Quit quiz?'))endQuiz(true)">Quit</button>
+        </div>
+      </div>
+      <div style="margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:6px;">
+          <span id="progressText"></span><span id="progressPct"></span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="quizProgressBar" style="background:var(--accent);width:0%"></div></div>
+        <div class="q-dots" id="qDots" style="margin-top:10px;"></div>
+      </div>
+      <div class="question-card" id="questionCard">
+        <div class="question-meta" id="questionMeta"></div>
+        <div class="question-text" id="questionText"></div>
+        <div class="options-list" id="optionsList"></div>
+        <div class="explanation-box" id="explanationBox"></div>
+      </div>
+      <div class="quiz-nav">
+        <button class="btn btn-ghost" id="prevBtn" onclick="navigateQ(-1)" disabled>â† Prev</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="navigateQ(1)">Next â†’</button>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="page" id="page-results">
+      <div class="page-header">
+        <div class="page-title">ðŸ“‹ Quiz Results</div>
+      </div>
+      <div class="grid2" style="margin-bottom:20px;">
+        <div class="card" id="scoreRingCard"></div>
+        <div id="resultStatsCol"></div>
+      </div>
+      <div class="card analysis-section" style="margin-bottom:20px;">
+        <div class="analysis-title" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span style="font-size:20px;">ðŸ“Š</span>
+          <h3 style="margin:0;font-size:16px;font-weight:700;">Weakness Analysis</h3>
+        </div>
+        <p class="analysis-subtitle" style="margin:0 0 18px;color:var(--text3);font-size:13px;">Detailed breakdown of your category performance:</p>
+        <div class="analysis-grid" style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:18px;align-items:start;">
+          <div class="chart-container" style="min-height:320px;position:relative;">
+            <canvas id="weakness-chart"></canvas>
+          </div>
+          <div id="actionable-feedback" class="feedback-list" style="display:grid;gap:12px;"></div>
+        </div>
+      </div>
+      <div class="affirmation-card" id="affirmationCard"></div>
+      <div class="grid2" style="margin-bottom:20px;">
+        <div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">âš ï¸ Weak Areas This Quiz</h3><div id="weakAreasResult"></div></div>
+        <div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">ðŸ’ª Strong Areas This Quiz</h3><div id="strongAreasResult"></div></div>
+      </div>
+      <div class="card" style="margin-bottom:20px;">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;">ðŸ” Question Review</h3>
+        <div id="reviewList"></div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="startQuiz()">ðŸ” Retake Quiz</button>
+        <button class="btn btn-ghost" onclick="showPage('quiz-setup',document.querySelector('[onclick*=quiz-setup]'))">ðŸŽ¯ New Quiz</button>
+        <button class="btn btn-ghost" onclick="showPage('dashboard',document.querySelector('[onclick*=dashboard]'))">ðŸ“Š Dashboard</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title">ðŸ“Š Your Dashboard</div>
+        <div class="page-sub">Track your learning journey</div>
+      </div>
+      <div class="grid4 fade-up" id="dashStatsRow" style="margin-bottom:24px;"></div>
+      <div class="grid2 fade-up" style="margin-bottom:20px;">
+        <div class="card">
+          <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;">ðŸ“ˆ Score Over Time</h3>
+          <div class="chart-container" style="height:220px;"><canvas id="scoreChart" role="img" aria-label="Line chart of quiz scores over time">Score progression chart</canvas></div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;">ðŸ“š Accuracy by Subject</h3>
+          <div class="chart-container" style="height:220px;"><canvas id="subjectChart" role="img" aria-label="Bar chart of accuracy by subject">Subject accuracy chart</canvas></div>
+        </div>
+      </div>
+      <div class="card fade-up">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;">ðŸ† Subject Performance</h3>
+        <div id="subjectPerformanceList"></div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="page" id="page-history">
+      <div class="page-header">
+        <div class="page-title">ðŸ“– Quiz History</div>
+        <div class="page-sub">All your past quizzes</div>
+      </div>
+      <div class="card fade-up" id="historyCard">
+        <div id="historyList"></div>
+      </div>
+    </div>
+
+    <!-- WEAKNESSES -->
+    <div class="page" id="page-weaknesses">
+      <div class="page-header">
+        <div class="page-title">âš ï¸ Weakness Analyzer</div>
+        <div class="page-sub">Understand where to focus your study time</div>
+      </div>
+      <div id="weaknessContent"></div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="page" id="page-tips">
+      <div class="page-header">
+        <div class="page-title">ðŸ’¡ Study Tips & Resources</div>
+        <div class="page-sub">Personalized guidance to help you improve</div>
+      </div>
+      <div id="tipsContent"></div>
+    </div>
+
+  </main>
+</div>
+
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
+
