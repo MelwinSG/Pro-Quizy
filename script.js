@@ -2,16 +2,16 @@
 // DATA — Question Bank
 // ============================================================
 const SUBJECTS = [
-  { id: 'math', name: 'Mathematics', icon: '🔢', color: '#7c6fff' },
-  { id: 'physics', name: 'Physics', icon: '⚛️', color: '#5b9ef8' },
-  { id: 'chemistry', name: 'Chemistry', icon: '🧪', color: '#34c98f' },
-  { id: 'biology', name: 'Biology', icon: '🧬', color: '#e87dc5' },
-  { id: 'english', name: 'English', icon: '📝', color: '#f5a623' },
-  { id: 'gk', name: 'General Knowledge', icon: '🌍', color: '#f06060' },
-  { id: 'logic', name: 'Logical Reasoning', icon: '🧠', color: '#b45ef8' },
-  { id: 'aptitude', name: 'Aptitude', icon: '📐', color: '#5b9ef8' },
-  { id: 'coding', name: 'Coding Basics', icon: '💻', color: '#34c98f' },
-  { id: 'affairs', name: 'Current Affairs', icon: '📰', color: '#f5a623' },
+  { id: 'math', name: 'Mathematics', icon: '', color: '#7c6fff' },
+  { id: 'physics', name: 'Physics', icon: '', color: '#5b9ef8' },
+  { id: 'chemistry', name: 'Chemistry', icon: '', color: '#34c98f' },
+  { id: 'biology', name: 'Biology', icon: '', color: '#e87dc5' },
+  { id: 'english', name: 'English', icon: '', color: '#f5a623' },
+  { id: 'gk', name: 'General Knowledge', icon: '', color: '#f06060' },
+  { id: 'logic', name: 'Logical Reasoning', icon: '', color: '#b45ef8' },
+  { id: 'aptitude', name: 'Aptitude', icon: '', color: '#5b9ef8' },
+  { id: 'coding', name: 'Coding Basics', icon: '', color: '#34c98f' },
+  { id: 'affairs', name: 'Current Affairs', icon: '', color: '#f5a623' },
 ];
 
 const QUESTIONS = {
@@ -252,16 +252,16 @@ function renderHome() {
   const avgScore = total ? Math.round(state.quizHistory.reduce((a,q)=>a+q.score,0)/total) : 0;
   const bestScore = total ? Math.max(...state.quizHistory.map(q=>q.score)) : 0;
   document.getElementById('home-stats-row').innerHTML = [
-    {val: total, label: 'Quizzes Taken', icon:'📝'},
-    {val: avgScore+'%', label: 'Avg Score', icon:'📈'},
-    {val: bestScore+'%', label: 'Best Score', icon:'🏆'},
-    {val: state.streak+'🔥', label: 'Day Streak', icon:''},
-  ].map(s=>`<div class="stat-card"><div class="stat-val">${s.val}</div><div class="stat-label">${s.icon} ${s.label}</div></div>`).join('');
+    {val: total, label: 'Quizzes Taken'},
+    {val: avgScore+'%', label: 'Avg Score'},
+    {val: bestScore+'%', label: 'Best Score'},
+    {val: state.streak, label: 'Day Streak'},
+  ].map(s=>`<div class="stat-card"><div class="stat-val">${s.val}</div><div class="stat-label">${s.label}</div></div>`).join('');
 
   // Subject grid
   document.getElementById('subjectGrid').innerHTML = SUBJECTS.map(s=>`
     <div class="subject-card" onclick="quickStart('${s.id}')">
-      <div class="subject-icon">${s.icon}</div>
+      <div class="subject-icon"></div>
       <div class="subject-name">${s.name}</div>
       <div class="subject-count">${QUESTIONS[s.id]?.length||0} questions</div>
     </div>`).join('');
@@ -306,7 +306,7 @@ function renderSetup() {
   if (!sel.options.length) {
     SUBJECTS.forEach(s => {
       const o = document.createElement('option');
-      o.value = s.id; o.textContent = s.icon+' '+s.name;
+      o.value = s.id; o.textContent = s.name;
       sel.appendChild(o);
     });
   }
@@ -397,11 +397,8 @@ function renderQuestion() {
 
   // Explanation
   const exBox = document.getElementById('explanationBox');
-  if (isDone || (quiz.showExpl && chosen !== null)) {
-    exBox.innerHTML = `<div class="explanation-title">💡 Explanation</div>${q.expl}`;
-    exBox.classList.add('show');
-  } else if (chosen !== null && quiz.showExpl) {
-    exBox.innerHTML = `<div class="explanation-title">💡 Explanation</div>${q.expl}`;
+  if (isDone && quiz.showExpl) {
+    exBox.innerHTML = `<div class="explanation-title">Explanation</div>${q.expl}`;
     exBox.classList.add('show');
   } else {
     exBox.classList.remove('show');
@@ -420,7 +417,7 @@ function renderQuestion() {
   document.getElementById('prevBtn').disabled = idx === 0;
   const nextBtn = document.getElementById('nextBtn');
   if (idx === total - 1) {
-    nextBtn.textContent = '✅ Finish Quiz';
+    nextBtn.textContent = 'Finish Quiz';
     nextBtn.className = 'btn btn-success';
     nextBtn.onclick = () => endQuiz(false);
   } else {
@@ -519,7 +516,7 @@ function showResultsPage(score, correct, topicMap) {
   const avgT = Math.round(quiz.times.filter(t=>t>0).reduce((a,b)=>a+b,0)/Math.max(quiz.times.filter(t=>t>0).length,1));
   document.getElementById('resultStatsCol').innerHTML = `
     <div style="display:flex;flex-direction:column;gap:12px;height:100%;justify-content:center;">
-      ${[['✅ Correct', correct, 'green'],['❌ Wrong', quiz.questions.length-correct-quiz.answers.filter(a=>a===null).length,'red'],['⏭ Skipped', quiz.answers.filter(a=>a===null).length,'amber'],['⏱ Avg Time', avgT+'s','blue']].map(([l,v,c])=>`
+      ${[['Correct', correct, 'green'],['Wrong', quiz.questions.length-correct-quiz.answers.filter(a=>a===null).length,'red'],['Skipped', quiz.answers.filter(a=>a===null).length,'amber'],['Avg Time', avgT+'s','blue']].map(([l,v,c])=>`
       <div class="card2" style="border-left:3px solid var(--${c});">
         <span style="font-size:12px;color:var(--text2);">${l}</span>
         <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--${c});">${v}</div>
@@ -528,7 +525,7 @@ function showResultsPage(score, correct, topicMap) {
 
   // Affirmation
   const aff = getAffirmation(score);
-  document.getElementById('affirmationCard').innerHTML = `<div class="affirmation-emoji">${aff.emoji}</div><div class="affirmation-text">${aff.text}</div>`;
+  document.getElementById('affirmationCard').innerHTML = `<div class="affirmation-text">${aff.text}</div>`;
 
   // Weak/Strong topics
   const topics = Object.entries(topicMap).map(([k,v])=>({name:k, acc:Math.round(v.correct/v.total*100), total:v.total}));
@@ -536,7 +533,7 @@ function showResultsPage(score, correct, topicMap) {
   renderActionableFeedback(topics);
   const weakT = topics.filter(t=>t.acc<60).sort((a,b)=>a.acc-b.acc);
   const strongT = topics.filter(t=>t.acc>=70).sort((a,b)=>b.acc-a.acc);
-  document.getElementById('weakAreasResult').innerHTML = weakT.length ? '<div class="weakness-list">'+weakT.map(t=>`<div class="ws-item weak"><span class="ws-name">${t.name}</span><span class="ws-pct">${t.acc}%</span></div>`).join('')+'</div>' : '<p style="font-size:13px;color:var(--green);">No weak areas — great work! 🎉</p>';
+  document.getElementById('weakAreasResult').innerHTML = weakT.length ? '<div class="weakness-list">'+weakT.map(t=>`<div class="ws-item weak"><span class="ws-name">${t.name}</span><span class="ws-pct">${t.acc}%</span></div>`).join('')+'</div>' : '<p style="font-size:13px;color:var(--green);">No weak areas — great work!</p>';
   document.getElementById('strongAreasResult').innerHTML = strongT.length ? '<div class="strength-list">'+strongT.map(t=>`<div class="ws-item strong"><span class="ws-name">${t.name}</span><span class="ws-pct">${t.acc}%</span></div>`).join('')+'</div>' : '<p style="font-size:13px;color:var(--text3);">Keep practicing to identify your strengths!</p>';
 
   // Review
@@ -637,29 +634,29 @@ function toggleReview(header) {  const body = header.nextElementSibling;
 }
 
 function getScoreLabel(s) {
-  if (s>=90) return '🏆 Excellent!';
-  if (s>=80) return '🌟 Great Work!';
-  if (s>=70) return '👍 Good Job!';
-  if (s>=60) return '📚 Keep Going!';
-  if (s>=50) return '💪 Keep Practicing!';
-  return '🌱 Room to Grow!';
+  if (s>=90) return 'Excellent!';
+  if (s>=80) return 'Great Work!';
+  if (s>=70) return 'Good Job!';
+  if (s>=60) return 'Keep Going!';
+  if (s>=50) return 'Keep Practicing!';
+  return 'Room to Grow!';
 }
 
 function getAffirmation(score) {
   const high = [
-    {emoji:'🏆', text:'"Outstanding performance! You have mastered this topic. Your hard work is truly paying off!"'},
-    {emoji:'🌟', text:'"Brilliant! You are at the top of your game. Keep this momentum going!"'},
-    {emoji:'🎯', text:'"Perfect precision! You clearly understand this material deeply. Champion!"'},
+    {emoji:'', text:'"Outstanding performance! You have mastered this topic. Your hard work is truly paying off!"'},
+    {emoji:'', text:'"Brilliant! You are at the top of your game. Keep this momentum going!"'},
+    {emoji:'', text:'"Perfect precision! You clearly understand this material deeply. Champion!"'},
   ];
   const mid = [
-    {emoji:'📈', text:'"You are improving every day! Each quiz brings you closer to mastery. Keep it up!"'},
-    {emoji:'💡', text:'"Good effort! Every mistake is a lesson in disguise. You\'re on the right path!"'},
-    {emoji:'🔥', text:'"Your consistency will lead to success. The difference between ordinary and extraordinary is that little extra!"'},
+    {emoji:'', text:'"You are improving every day! Each quiz brings you closer to mastery. Keep it up!"'},
+    {emoji:'', text:'"Good effort! Every mistake is a lesson in disguise. You\'re on the right path!"'},
+    {emoji:'', text:'"Your consistency will lead to success. The difference between ordinary and extraordinary is that little extra!"'},
   ];
   const low = [
-    {emoji:'🌱', text:'"Mistakes are proof that you are learning. Every expert was once a beginner — keep going!"'},
-    {emoji:'💪', text:'"You showed up and that\'s the most important step. Tomorrow you\'ll be better than today!"'},
-    {emoji:'🌈', text:'"Don\'t be discouraged — every stumble is a step forward. Your breakthrough is coming!"'},
+    {emoji:'', text:'"Mistakes are proof that you are learning. Every expert was once a beginner — keep going!"'},
+    {emoji:'', text:'"You showed up and that\'s the most important step. Tomorrow you\'ll be better than today!"'},
+    {emoji:'', text:'"Don\'t be discouraged — every stumble is a step forward. Your breakthrough is coming!"'},
   ];
   const pool = score>=80?high:score>=60?mid:low;
   return pool[Math.floor(Math.random()*pool.length)];
@@ -706,27 +703,27 @@ function renderDashboard() {
   const subjects = new Set(hist.map(q=>q.subject)).size;
 
   document.getElementById('dashStatsRow').innerHTML = [
-    {val:total, label:'Total Quizzes', icon:'📝'},
-    {val:avg+'%', label:'Average Score', icon:'📊'},
-    {val:best+'%', label:'Best Score', icon:'🏆'},
-    {val:subjects, label:'Subjects Tried', icon:'📚'},
-  ].map(s=>`<div class="stat-card"><div class="stat-val">${s.val}</div><div class="stat-label">${s.icon} ${s.label}</div></div>`).join('');
+    {val:total, label:'Total Quizzes'},
+    {val:avg+'%', label:'Average Score'},
+    {val:best+'%', label:'Best Score'},
+    {val:subjects, label:'Subjects Tried'},
+  ].map(s=>`<div class="stat-card"><div class="stat-val">${s.val}</div><div class="stat-label">${s.label}</div></div>`).join('');
 
   renderCharts();
 
   // Subject performance list
   const perf = Object.entries(state.subjectStats).map(([k,v])=>({
-    id:k, name:SUBJECTS.find(s=>s.id===k)?.name||k, icon:SUBJECTS.find(s=>s.id===k)?.icon||'📚',
+    id:k, name:SUBJECTS.find(s=>s.id===k)?.name||k, icon:'',
     acc: v.total?Math.round(v.correct/v.total*100):0, total:v.total, correct:v.correct
   })).sort((a,b)=>b.total-a.total);
 
   if (!perf.length) {
-    document.getElementById('subjectPerformanceList').innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">No quiz data yet</div><p style="font-size:13px;color:var(--text3);">Take some quizzes to see your performance!</p></div>';
+    document.getElementById('subjectPerformanceList').innerHTML = '<div class="empty-state"><div class="empty-icon"></div><div class="empty-text">No quiz data yet</div><p style="font-size:13px;color:var(--text3);">Take some quizzes to see your performance!</p></div>';
   } else {
     document.getElementById('subjectPerformanceList').innerHTML = perf.map(p=>`
       <div style="padding:12px 0;border-bottom:1px solid var(--border);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <span style="font-size:14px;font-weight:500;color:var(--text);">${p.icon} ${p.name}</span>
+          <span style="font-size:14px;font-weight:500;color:var(--text);">${p.name}</span>
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="font-size:12px;color:var(--text3);">${p.correct}/${p.total} correct</span>
             <span style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:${p.acc>=70?'var(--green)':p.acc>=50?'var(--amber)':'var(--red)'};">${p.acc}%</span>
@@ -807,14 +804,14 @@ function renderCharts() {
 function renderHistory() {
   const hist = state.quizHistory;
   if (!hist.length) {
-    document.getElementById('historyList').innerHTML = '<div class="empty-state"><div class="empty-icon">📖</div><div class="empty-text">No quiz history yet</div><p style="font-size:13px;color:var(--text3);">Start a quiz to build your history!</p></div>';
+    document.getElementById('historyList').innerHTML = '<div class="empty-state"><div class="empty-icon"></div><div class="empty-text">No quiz history yet</div><p style="font-size:13px;color:var(--text3);">Start a quiz to build your history!</p></div>';
     return;
   }
   document.getElementById('historyList').innerHTML = hist.map(h=>{
     const col = h.score>=80?'green':h.score>=60?'amber':'red';
     return `<div class="history-row">
       <div>
-        <div class="history-subj">${SUBJECTS.find(s=>s.id===h.subject)?.icon||'📚'} ${h.subjectName}</div>
+        <div class="history-subj">${h.subjectName}</div>
         <div class="history-detail">${h.date} · ${h.diff||''} · ${h.total} questions · avg ${h.avgTime||'?'}s/q</div>
       </div>
       <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--${col});">${h.score}%</span>
@@ -828,12 +825,12 @@ function renderHistory() {
 function renderWeaknesses() {
   const {weak, strong} = computeWeakStrong();
   const allSubj = Object.entries(state.subjectStats).map(([k,v])=>({
-    id:k, name:SUBJECTS.find(s=>s.id===k)?.name||k, icon:SUBJECTS.find(s=>s.id===k)?.icon||'📚',
+    id:k, name:SUBJECTS.find(s=>s.id===k)?.name||k, icon:'',
     acc:v.total?Math.round(v.correct/v.total*100):0, total:v.total
   }));
 
   if (!allSubj.length) {
-    document.getElementById('weaknessContent').innerHTML = '<div class="empty-state" style="padding:60px 0;"><div class="empty-icon">⚠️</div><div class="empty-text">Not enough data yet</div><p style="font-size:13px;color:var(--text3);">Take at least 3 quizzes per subject to see your weakness analysis.</p><button class="btn btn-primary" style="margin-top:20px;" onclick="showPage(\'quiz-setup\',document.querySelector(\'[onclick*=quiz-setup]\'))">Start a Quiz</button></div>';
+    document.getElementById('weaknessContent').innerHTML = '<div class="empty-state" style="padding:60px 0;"><div class="empty-icon"></div><div class="empty-text">Not enough data yet</div><p style="font-size:13px;color:var(--text3);">Take at least 3 quizzes per subject to see your weakness analysis.</p><button class="btn btn-primary" style="margin-top:20px;" onclick="showPage(\'quiz-setup\',document.querySelector(\'[onclick*=quiz-setup]\'))">Start a Quiz</button></div>';
     return;
   }
 
@@ -843,8 +840,8 @@ function renderWeaknesses() {
 
   let html = '';
   if (weakItems.length) {
-    html += `<div class="alert alert-warn" style="margin-bottom:16px;"><span style="font-size:18px;">⚠️</span><div>You have <strong>${weakItems.length}</strong> area(s) that need attention. Focus your study time here!</div></div>`;
-    html += '<div class="card" style="margin-bottom:20px;"><h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--red);">⚠️ Needs Improvement</h3>';
+    html += `<div class="alert alert-warn" style="margin-bottom:16px;"><div>You have <strong>${weakItems.length}</strong> area(s) that need attention. Focus your study time here!</div></div>`;
+    html += '<div class="card" style="margin-bottom:20px;"><h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--red);">Needs Improvement</h3>';
     html += '<div class="weakness-list">' + weakItems.map(s=>`
       <div class="ws-item weak" style="flex-direction:column;align-items:flex-start;gap:8px;">
         <div style="display:flex;width:100%;justify-content:space-between;align-items:center;">
@@ -856,7 +853,7 @@ function renderWeaknesses() {
       </div>`).join('') + '</div></div>';
   }
   if (midItems.length) {
-    html += '<div class="card" style="margin-bottom:20px;"><h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--amber);">📈 Getting Better</h3>';
+    html += '<div class="card" style="margin-bottom:20px;"><h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--amber);">Getting Better</h3>';
     html += midItems.map(s=>`
       <div style="padding:10px 0;border-bottom:1px solid var(--border);">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
@@ -867,7 +864,7 @@ function renderWeaknesses() {
       </div>`).join('') + '</div>';
   }
   if (strongItems.length) {
-    html += '<div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--green);">💪 Your Strengths</h3>';
+    html += '<div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--green);">Your Strengths</h3>';
     html += strongItems.map(s=>`
       <div style="padding:10px 0;border-bottom:1px solid var(--border);">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
@@ -877,7 +874,7 @@ function renderWeaknesses() {
         <div class="progress-bar"><div class="progress-fill" style="width:${s.acc}%;background:var(--green);"></div></div>
       </div>`).join('') + '</div>';
   }
-  document.getElementById('weaknessContent').innerHTML = html || '<div class="alert alert-info"><span>ℹ️</span>Take more quizzes to unlock your personalized weakness analysis!</div>';
+  document.getElementById('weaknessContent').innerHTML = html || '<div class="alert alert-info">Take more quizzes to unlock your personalized weakness analysis!</div>';
 }
 
 // ============================================================
@@ -886,22 +883,22 @@ function renderWeaknesses() {
 function renderTips() {
   const {weak} = computeWeakStrong();
   const tips = [
-    { icon:'🧠', title:'Spaced Repetition', body:'Review material at increasing intervals: 1 day, 3 days, 1 week, 2 weeks. This technique dramatically improves long-term retention.', subj:[] },
-    { icon:'📝', title:'Active Recall', body:'Instead of re-reading notes, test yourself. Close your book and try to recall the key concepts from memory.', subj:[] },
-    { icon:'⏰', title:'Pomodoro Technique', body:'Study for 25 minutes, then take a 5-minute break. After 4 cycles, take a longer 15–30 minute break.', subj:[] },
-    { icon:'🔢', title:'Math: Practice Daily', body:'Mathematics requires daily practice. Spend at least 30 minutes solving problems — even easy ones build fluency.', subj:['math','aptitude'] },
-    { icon:'⚛️', title:'Physics: Understand Concepts', body:'Avoid rote memorization. Focus on understanding why a formula works — derive it yourself if possible.', subj:['physics'] },
-    { icon:'🧪', title:'Chemistry: Use Mnemonics', body:'For the periodic table and chemical reactions, create acronyms or rhymes to help memorize patterns.', subj:['chemistry'] },
-    { icon:'🧬', title:'Biology: Diagrams Help', body:'Draw and label diagrams repeatedly. Visual representation of processes like photosynthesis aids recall.', subj:['biology'] },
-    { icon:'📚', title:'English: Read Daily', body:'Reading newspapers, novels, or even articles expands vocabulary and improves grammar instinctively.', subj:['english'] },
-    { icon:'🌍', title:'GK: Follow the News', body:'Spend 15 minutes daily reading current affairs. Use apps or newspapers to stay updated.', subj:['gk','affairs'] },
-    { icon:'🧠', title:'Logic: Solve Puzzles', body:'Practice with Sudoku, crosswords, and reasoning puzzles daily. They strengthen pattern recognition.', subj:['logic'] },
-    { icon:'💻', title:'Coding: Build Projects', body:'Don\'t just read about coding — build small projects. Even a simple to-do app teaches core concepts.', subj:['coding'] },
+    { icon:'', title:'Spaced Repetition', body:'Review material at increasing intervals: 1 day, 3 days, 1 week, 2 weeks. This technique dramatically improves long-term retention.', subj:[] },
+    { icon:'', title:'Active Recall', body:'Instead of re-reading notes, test yourself. Close your book and try to recall the key concepts from memory.', subj:[] },
+    { icon:'', title:'Pomodoro Technique', body:'Study for 25 minutes, then take a 5-minute break. After 4 cycles, take a longer 15–30 minute break.', subj:[] },
+    { icon:'', title:'Math: Practice Daily', body:'Mathematics requires daily practice. Spend at least 30 minutes solving problems — even easy ones build fluency.', subj:['math','aptitude'] },
+    { icon:'', title:'Physics: Understand Concepts', body:'Avoid rote memorization. Focus on understanding why a formula works — derive it yourself if possible.', subj:['physics'] },
+    { icon:'', title:'Chemistry: Use Mnemonics', body:'For the periodic table and chemical reactions, create acronyms or rhymes to help memorize patterns.', subj:['chemistry'] },
+    { icon:'', title:'Biology: Diagrams Help', body:'Draw and label diagrams repeatedly. Visual representation of processes like photosynthesis aids recall.', subj:['biology'] },
+    { icon:'', title:'English: Read Daily', body:'Reading newspapers, novels, or even articles expands vocabulary and improves grammar instinctively.', subj:['english'] },
+    { icon:'', title:'GK: Follow the News', body:'Spend 15 minutes daily reading current affairs. Use apps or newspapers to stay updated.', subj:['gk','affairs'] },
+    { icon:'', title:'Logic: Solve Puzzles', body:'Practice with Sudoku, crosswords, and reasoning puzzles daily. They strengthen pattern recognition.', subj:['logic'] },
+    { icon:'', title:'Coding: Build Projects', body:'Don\'t just read about coding — build small projects. Even a simple to-do app teaches core concepts.', subj:['coding'] },
   ];
 
   let personalizedTips = '';
   if (weak.length) {
-    personalizedTips = `<div class="alert alert-info" style="margin-bottom:16px;"><span>🎯</span><div>Personalized tips based on your weak areas: <strong>${weak.map(w=>w.name).join(', ')}</strong></div></div>`;
+    personalizedTips = `<div class="alert alert-info" style="margin-bottom:16px;"><div>Personalized tips based on your weak areas: <strong>${weak.map(w=>w.name).join(', ')}</strong></div></div>`;
   }
 
   const relevant = tips.filter(t=>t.subj.length===0 || t.subj.some(s=>weak.map(w=>w.id).includes(s)));
