@@ -578,6 +578,9 @@ function startQuiz() {
     startTime: Date.now(),
     questionStartTime: Date.now(),
     timerPerQ: timerSec,
+    totalTime: 15 * 60,
+    questionRemaining: timerSec > 0 ? timerSec : null,
+    totalRemaining: 15 * 60,
     showExpl,
     done: false,
   };
@@ -647,7 +650,9 @@ function renderQuestion() {
 
   // Nav
   document.getElementById('prevBtn').disabled = idx === 0;
+  const skipBtn = document.getElementById('skipBtn');
   const nextBtn = document.getElementById('nextBtn');
+  skipBtn.disabled = isDone || chosen !== null;
   if (idx === total - 1) {
     nextBtn.textContent = 'Finish Quiz';
     nextBtn.className = 'btn btn-success';
@@ -675,6 +680,21 @@ function navigateQ(dir) {
   quiz.currentIdx = newIdx;
   renderQuestion();
   resetTimer();
+}
+
+function skipQuestion() {
+  const quiz = state.currentQuiz;
+  if (!quiz || quiz.done) return;
+  const idx = quiz.currentIdx;
+  if (quiz.answers[idx] !== null) return;
+  quiz.times[idx] = Math.round((Date.now() - quiz.questionStartTime) / 1000);
+  if (idx === quiz.questions.length - 1) {
+    endQuiz(false);
+  } else {
+    quiz.currentIdx += 1;
+    renderQuestion();
+    resetTimer();
+  }
 }
 
 function endQuiz(quit) {
@@ -900,27 +920,46 @@ function getAffirmation(score) {
 function startTimer() {
   clearInterval(timerInterval);
   const quiz = state.currentQuiz;
-  if (!quiz.timerPerQ) { document.getElementById('timerDisplay').textContent = '∞'; return; }
-  let remaining = quiz.timerPerQ;
-  updateTimerDisplay(remaining, quiz.timerPerQ);
+  if (!quiz.timerPerQ && !quiz.totalTime) { document.getElementById('timerDisplay').textContent = '∞'; return; }
+  if (quiz.questionRemaining == null && quiz.timerPerQ > 0) quiz.questionRemaining = quiz.timerPerQ;
+  if (quiz.totalRemaining == null && quiz.totalTime) quiz.totalRemaining = quiz.totalTime;
+  const qRem = quiz.questionRemaining;
+  const tRem = quiz.totalRemaining;
+  updateTimerDisplay(qRem, tRem, quiz.timerPerQ);
   timerInterval = setInterval(()=>{
-    remaining--;
-    updateTimerDisplay(remaining, quiz.timerPerQ);
-    if (remaining <= 0) {
+    if (quiz.totalRemaining != null) quiz.totalRemaining -= 1;
+    if (quiz.questionRemaining != null) quiz.questionRemaining -= 1;
+    const qRemNow = quiz.questionRemaining;
+    const tRemNow = quiz.totalRemaining;
+    updateTimerDisplay(qRemNow, tRemNow, quiz.timerPerQ);
+    if (tRemNow !== null && tRemNow <= 0) {
       clearInterval(timerInterval);
+      endQuiz(false);
+      return;
+    }
+    if (qRemNow !== null && qRemNow <= 0) {
       if (quiz.answers[quiz.currentIdx] === null) quiz.answers[quiz.currentIdx] = null;
-      if (quiz.currentIdx < quiz.questions.length-1) { navigateQ(1); startTimer(); }
-      else endQuiz(false);
+      if (quiz.currentIdx < quiz.questions.length-1) {
+        quiz.currentIdx += 1;
+        quiz.questionRemaining = quiz.timerPerQ > 0 ? quiz.timerPerQ : null;
+        renderQuestion();
+      } else {
+        clearInterval(timerInterval);
+        endQuiz(false);
+      }
     }
   }, 1000);
 }
 function resetTimer() { clearInterval(timerInterval); startTimer(); }
-function updateTimerDisplay(rem, total) {
+function updateTimerDisplay(rem, total, perQ) {
   const el = document.getElementById('timerDisplay');
   const timer = document.getElementById('quizTimer');
-  el.textContent = rem+'s';
+  const totalLabel = total != null ? `${Math.floor(total/60).toString().padStart(2,'0')}:${(total%60).toString().padStart(2,'0')}` : '∞';
+  const questionLabel = perQ && rem != null ? `${rem}s` : 'No Q timer';
+  el.textContent = perQ ? `${questionLabel} / ${totalLabel}` : totalLabel;
   timer.className = 'quiz-timer';
-  if (rem <= total*0.3) timer.classList.add('timer-urgent');
+  if (rem != null && total != null && rem <= Math.max(1, perQ * 0.3)) timer.classList.add('timer-urgent');
+  else if (rem != null && total != null && rem <= Math.max(1, perQ * 0.5)) timer.classList.add('timer-warn');
   else if (rem <= total*0.5) timer.classList.add('timer-warn');
 }
 

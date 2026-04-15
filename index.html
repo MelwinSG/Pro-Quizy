@@ -95,7 +95,7 @@
           <input type="number" id="setupQCount" min="5" max="20" value="10" style="width:80px;">
         </div>
         <div class="setup-row">
-          <div><div class="setup-label">Timer</div><div class="setup-hint">Seconds per question (0 = no timer)</div></div>
+          <div><div class="setup-label">Timer</div><div class="setup-hint">Seconds per question (0 = no per-question timer). Total quiz time is 15 minutes.</div></div>
           <input type="number" id="setupTimer" min="0" max="120" value="30" style="width:80px;">
         </div>
         <div class="setup-row">
@@ -137,8 +137,7 @@
         <div class="explanation-box" id="explanationBox"></div>
       </div>
       <div class="quiz-nav">
-        <button class="btn btn-ghost" id="prevBtn" onclick="navigateQ(-1)" disabled>â† Prev</button>
-        <button class="btn btn-primary" id="nextBtn" onclick="navigateQ(1)">Next â†’</button>
+        <button class="btn btn-ghost" id="prevBtn" onclick="navigateQ(-1)" disabled>Prev</button>        <button class="btn btn-ghost" id="skipBtn" onclick="skipQuestion()">Skip</button>        <button class="btn btn-primary" id="nextBtn" onclick="navigateQ(1)">Next â†’</button>
       </div>
     </div>
 
