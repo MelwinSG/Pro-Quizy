@@ -151,6 +151,19 @@
         <div class="card" id="scoreRingCard"></div>
         <div id="resultStatsCol"></div>
       </div>
+      <div class="card analysis-section" style="margin-bottom:20px;">
+        <div class="analysis-title" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span style="font-size:20px;">📊</span>
+          <h3 style="margin:0;font-size:16px;font-weight:700;">Weakness Analysis</h3>
+        </div>
+        <p class="analysis-subtitle" style="margin:0 0 18px;color:var(--text3);font-size:13px;">Detailed breakdown of your category performance:</p>
+        <div class="analysis-grid" style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:18px;align-items:start;">
+          <div class="chart-container" style="min-height:320px;position:relative;">
+            <canvas id="weakness-chart"></canvas>
+          </div>
+          <div id="actionable-feedback" class="feedback-list" style="display:grid;gap:12px;"></div>
+        </div>
+      </div>
       <div class="affirmation-card" id="affirmationCard"></div>
       <div class="grid2" style="margin-bottom:20px;">
         <div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">⚠️ Weak Areas This Quiz</h3><div id="weakAreasResult"></div></div>
@@ -545,13 +558,14 @@ function renderQuestion() {
   const chosen = quiz.answers[idx];
   const isDone = quiz.done;
   const letters = ['A','B','C','D'];
+  const disabled = isDone || chosen !== null;
   document.getElementById('optionsList').innerHTML = q.opts.map((opt, oi) => {
     let cls = 'option';
     if (isDone) {
       if (oi === q.ans) cls += ' show-correct';
       else if (oi === chosen && chosen !== q.ans) cls += ' wrong';
     } else if (oi === chosen) cls += ' selected';
-    return `<div class="${cls}" onclick="${isDone?'':'selectAnswer('+oi+')'}" style="${isDone?'cursor:default;':''}">
+    return `<div class="${cls}" ${disabled?'style="pointer-events:none;cursor:default;"':'onclick="selectAnswer('+oi+')"`}>
       <span class="option-letter">${letters[oi]}</span>${opt}
     </div>`;
   }).join('');
@@ -594,22 +608,10 @@ function renderQuestion() {
 
 function selectAnswer(optIdx) {
   const quiz = state.currentQuiz;
-  if (quiz.done) return;
+  if (quiz.done || quiz.answers[quiz.currentIdx] !== null) return;
   quiz.answers[quiz.currentIdx] = optIdx;
   quiz.times[quiz.currentIdx] = Math.round((Date.now() - quiz.questionStartTime)/1000);
-
-  // Visual update
-  const opts = document.querySelectorAll('.option');
-  opts.forEach((o,i) => {
-    o.className = 'option' + (i===optIdx?' selected':'');
-    if (i===optIdx) o.querySelector('.option-letter').style.background='var(--accent)';
-  });
-  const q = quiz.questions[quiz.currentIdx];
-  if (quiz.showExpl) {
-    const exBox = document.getElementById('explanationBox');
-    exBox.innerHTML = `<div class="explanation-title">💡 Explanation</div>${q.expl}`;
-    exBox.classList.add('show');
-  }
+  renderQuestion();
   // Show correct/wrong
   opts.forEach((o,i) => {
     if (i === q.ans) o.className = 'option correct';

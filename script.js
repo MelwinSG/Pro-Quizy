@@ -127,7 +127,7 @@ let state = {
 };
 let quizSettings = { subject: 'math', diff: 'easy', count: 10, timer: 30, showExpl: true };
 let timerInterval = null;
-let scoreChart = null, subjChart = null;
+let scoreChart = null, subjChart = null, weaknessChart = null;
 
 function saveState() {
   localStorage.setItem('qm_history', JSON.stringify(state.quizHistory));
@@ -324,7 +324,8 @@ function renderQuestion() {
       if (oi === q.ans) cls += ' show-correct';
       else if (oi === chosen && chosen !== q.ans) cls += ' wrong';
     } else if (oi === chosen) cls += ' selected';
-    return `<div class="${cls}" onclick="${isDone?'':'selectAnswer('+oi+')'}" style="${isDone?'cursor:default;':''}">
+    const disabled = isDone || chosen !== null;
+    return `<div class="${cls}" ${disabled?'style="pointer-events:none;cursor:default;"':'onclick="selectAnswer('+oi+')"'}>
       <span class="option-letter">${letters[oi]}</span>${opt}
     </div>`;
   }).join('');
@@ -367,27 +368,10 @@ function renderQuestion() {
 
 function selectAnswer(optIdx) {
   const quiz = state.currentQuiz;
-  if (quiz.done) return;
+  if (quiz.done || quiz.answers[quiz.currentIdx] !== null) return;
   quiz.answers[quiz.currentIdx] = optIdx;
   quiz.times[quiz.currentIdx] = Math.round((Date.now() - quiz.questionStartTime)/1000);
-
-  // Visual update
-  const opts = document.querySelectorAll('.option');
-  opts.forEach((o,i) => {
-    o.className = 'option' + (i===optIdx?' selected':'');
-    if (i===optIdx) o.querySelector('.option-letter').style.background='var(--accent)';
-  });
-  const q = quiz.questions[quiz.currentIdx];
-  if (quiz.showExpl) {
-    const exBox = document.getElementById('explanationBox');
-    exBox.innerHTML = `<div class="explanation-title">💡 Explanation</div>${q.expl}`;
-    exBox.classList.add('show');
-  }
-  // Show correct/wrong
-  opts.forEach((o,i) => {
-    if (i === q.ans) o.className = 'option correct';
-    else if (i === optIdx && optIdx !== q.ans) o.className = 'option wrong';
-  });
+  renderQuestion();
 }
 
 function navigateQ(dir) {
@@ -483,6 +467,8 @@ function showResultsPage(score, correct, topicMap) {
 
   // Weak/Strong topics
   const topics = Object.entries(topicMap).map(([k,v])=>({name:k, acc:Math.round(v.correct/v.total*100), total:v.total}));
+  renderWeaknessChart(topics);
+  renderActionableFeedback(topics);
   const weakT = topics.filter(t=>t.acc<60).sort((a,b)=>a.acc-b.acc);
   const strongT = topics.filter(t=>t.acc>=70).sort((a,b)=>b.acc-a.acc);
   document.getElementById('weakAreasResult').innerHTML = weakT.length ? '<div class="weakness-list">'+weakT.map(t=>`<div class="ws-item weak"><span class="ws-name">${t.name}</span><span class="ws-pct">${t.acc}%</span></div>`).join('')+'</div>' : '<p style="font-size:13px;color:var(--green);">No weak areas — great work! 🎉</p>';
@@ -510,8 +496,78 @@ function showResultsPage(score, correct, topicMap) {
   }).join('');
 }
 
-function toggleReview(header) {
-  const body = header.nextElementSibling;
+function renderWeaknessChart(topics) {
+  const chartEl = document.getElementById('weakness-chart');
+  if (!chartEl) return;
+  if (weaknessChart) weaknessChart.destroy();
+  if (!topics.length) {
+    chartEl.parentElement.innerHTML = '<div style="padding:28px 16px;text-align:center;color:var(--text3);">No category performance data available.</div>';
+    return;
+  }
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const color = isDark ? '#8b9bff' : '#7c6fff';
+  weaknessChart = new Chart(chartEl, {
+    type: 'radar',
+    data: {
+      labels: topics.map(t=>t.name),
+      datasets: [{
+        label: 'Accuracy %',
+        data: topics.map(t=>t.acc),
+        backgroundColor: 'rgba(124,111,255,0.22)',
+        borderColor: color,
+        borderWidth: 2,
+        pointBackgroundColor: color,
+        pointBorderColor: '#fff',
+        pointRadius: 4,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100,
+          ticks: { color: isDark ? '#b0b7e6' : '#4a5068', stepSize: 20, backdropColor: 'transparent' },
+          pointLabels: { color: isDark ? '#edf2ff' : '#344054', font: { size: 11 } },
+          grid: { color: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' },
+          angleLines: { color: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => `${ctx.formattedValue}%` } }
+      }
+    }
+  });
+}
+
+function renderActionableFeedback(topics) {
+  const container = document.getElementById('actionable-feedback');
+  if (!container) return;
+  if (!topics.length) {
+    container.innerHTML = '<div style="padding:18px;border-radius:14px;background:rgba(124,111,255,0.08);color:var(--text3);">No actionable feedback available yet.</div>';
+    return;
+  }
+  const alerts = topics.sort((a,b)=>a.acc-b.acc).map(topic => {
+    let label = 'Strong area';
+    let bg = 'rgba(52,201,143,0.12)';
+    let border = 'rgba(52,201,143,0.28)';
+    if (topic.acc < 50) { label = 'Needs urgent review'; bg = 'rgba(240,96,96,0.12)'; border = 'rgba(240,96,96,0.28)'; }
+    else if (topic.acc < 70) { label = 'Review this topic'; bg = 'rgba(245,166,35,0.12)'; border = 'rgba(245,166,35,0.28)'; }
+    return `<div style="border:1px solid ${border};background:${bg};border-radius:14px;padding:14px;display:grid;gap:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--text);">
+        <span>${topic.name}</span>
+        <span>${topic.acc}%</span>
+      </div>
+      <div style="font-size:13px;color:var(--text3);">${label} — focus on examples and explanations for this category.</div>
+    </div>`;
+  });
+  container.innerHTML = alerts.join('');
+}
+
+function toggleReview(header) {  const body = header.nextElementSibling;
   body.classList.toggle('open');
 }
 
