@@ -91,8 +91,8 @@
           </div>
         </div>
         <div class="setup-row">
-          <div><div class="setup-label">Timer</div><div class="setup-hint">Seconds per question (0 = no per-question timer). Total quiz time is 30s × number of questions.</div></div>
-          <input type="number" id="setupTimer" min="0" max="120" value="30" style="width:80px;">
+          <div><div class="setup-label">Timer</div><div class="setup-hint">Fixed time per question: 30 seconds. Total quiz time is 30s × number of questions.</div></div>
+          <input type="number" id="setupTimer" min="30" max="30" value="30" style="width:80px;" readonly onkeydown="return false;" onpaste="return false;">
         </div>
         <div class="setup-row">
           <div><div class="setup-label">Show Explanations</div><div class="setup-hint">See why answers are right/wrong</div></div>

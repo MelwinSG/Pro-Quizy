@@ -596,7 +596,7 @@ function selectDiff(btn, diff) {
 function startQuiz() {
   const subj = document.getElementById('setupSubject')?.value || quizSettings.subject;
   let count = parseInt(document.getElementById('setupQCount')?.value || 10);
-  const timerSec = parseInt(document.getElementById('setupTimer')?.value ?? 30);
+  const timerSec = 30;
   const showExpl = document.getElementById('explToggle')?.classList.contains('on') ?? true;
 
   if (Number.isNaN(count)) count = 10;
