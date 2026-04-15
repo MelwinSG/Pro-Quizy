@@ -545,6 +545,48 @@ function renderSetup() {
   sel.value = quizSettings.subject;
 }
 
+function clampQCount() {
+  const input = document.getElementById('setupQCount');
+  if (!input) return;
+  let count = parseInt(input.value, 10);
+  if (Number.isNaN(count)) count = 10;
+  if (count < 5) count = 5;
+  if (count > 25) count = 25;
+  input.value = count;
+}
+
+function getMaxQuestionCount() {
+  const subj = document.getElementById('setupSubject')?.value || quizSettings.subject;
+  return Math.min(25, (QUESTIONS[subj] || []).length || 25);
+}
+
+function clampQCount() {
+  const input = document.getElementById('setupQCount');
+  if (!input) return;
+  const maxCount = getMaxQuestionCount();
+  let count = parseInt(input.value, 10);
+  if (Number.isNaN(count)) count = 10;
+  if (count < 5) count = 5;
+  if (count > maxCount) count = maxCount;
+  input.value = count;
+}
+
+function syncCountWithSubject() {
+  clampQCount();
+}
+
+function changeQCount(delta) {
+  const input = document.getElementById('setupQCount');
+  if (!input) return;
+  const maxCount = getMaxQuestionCount();
+  let count = parseInt(input.value, 10);
+  if (Number.isNaN(count)) count = 10;
+  count += delta;
+  if (count < 5) count = 5;
+  if (count > maxCount) count = maxCount;
+  input.value = count;
+}
+
 function selectDiff(btn, diff) {
   document.querySelectorAll('.diff-btn').forEach(b => b.className = 'diff-btn');
   btn.classList.add('active-' + diff);
@@ -553,18 +595,19 @@ function selectDiff(btn, diff) {
 
 function startQuiz() {
   const subj = document.getElementById('setupSubject')?.value || quizSettings.subject;
-  const count = parseInt(document.getElementById('setupQCount')?.value || 10);
+  let count = parseInt(document.getElementById('setupQCount')?.value || 10);
   const timerSec = parseInt(document.getElementById('setupTimer')?.value ?? 30);
   const showExpl = document.getElementById('explToggle')?.classList.contains('on') ?? true;
 
+  if (Number.isNaN(count)) count = 10;
+  if (count < 5) count = 5;
+  const maxCount = getMaxQuestionCount();
+  if (count > maxCount) count = maxCount;
+  document.getElementById('setupQCount').value = count;
+
   quizSettings = { ...quizSettings, subject: subj, count, timer: timerSec, showExpl };
 
-  let pool = (QUESTIONS[subj] || []).filter(q => {
-    if (quizSettings.diff === 'easy') return q.diff === 'easy';
-    if (quizSettings.diff === 'hard') return q.diff === 'hard';
-    return true;
-  });
-  if (!pool.length) pool = QUESTIONS[subj] || [];
+  let pool = QUESTIONS[subj] || [];
 
   const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, Math.min(count, pool.length));
 
@@ -578,9 +621,9 @@ function startQuiz() {
     startTime: Date.now(),
     questionStartTime: Date.now(),
     timerPerQ: timerSec,
-    totalTime: 15 * 60,
+    totalTime: count * 30,
     questionRemaining: timerSec > 0 ? timerSec : null,
-    totalRemaining: 15 * 60,
+    totalRemaining: count * 30,
     showExpl,
     done: false,
   };
